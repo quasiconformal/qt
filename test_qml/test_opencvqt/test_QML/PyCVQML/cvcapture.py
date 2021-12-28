@@ -62,7 +62,7 @@ class CVCapture(QtCore.QObject):
         self.m_busy = False
         QtCore.QMetaObject.invokeMethod(self,
                                         "setImage",
-                                        QtCore.Qt.QueuedConnection,
+                                        QtCore.Qt.ConnectionType.QueuedConnection,
                                         QtCore.Q_ARG(QtGui.QImage, image))
 
     @staticmethod
@@ -71,7 +71,9 @@ class CVCapture(QtCore.QObject):
             return QtGui.QImage()
         if im.dtype == np.uint8:
             if len(im.shape) == 2:
-                qim = QtGui.QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QtGui.QImage.Format_Indexed8)
+                qim = QtGui.QImage(
+                    im.data, im.shape[1], im.shape[0], im.strides[0], 
+                    QtGui.QImage.Format.Format_BGR888)
                 qim.setColorTable(gray_color_table)
                 return qim.copy()
 
