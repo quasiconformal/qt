@@ -61,9 +61,9 @@ class CVCapture(QtCore.QObject):
     def process_image(self, frame):
         self.m_busy = True
         for f in self.m_filters:
-            #frame = f.process_image(frame)
-            frame = frame ## TODO:
-        print("process_image frame:",frame.shape)
+            frame = f.process_image(frame)
+
+        #print("process_image frame:",frame.shape)
         image = CVCapture.ToQImage(frame)
         self.m_busy = False
         if image.isNull():
@@ -83,9 +83,9 @@ class CVCapture(QtCore.QObject):
             if len(im.shape) == 2:
                 qim = QtGui.QImage(
                     im.data, im.shape[1], im.shape[0], im.strides[0], 
-                    QtGui.QImage.Format.Format_BGR888)
+                    QtGui.QImage.Format.Format_Indexed8)
                 qim.setColorTable(gray_color_table)
-                print("ToQImage gray", qim.isNull())
+                #print("ToQImage gray", qim.isNull()) #### BAD nullになってしまう
                 return qim.copy()
 
             elif len(im.shape) == 3:
@@ -94,7 +94,7 @@ class CVCapture(QtCore.QObject):
                     rgb_image = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
                     flip_image = cv2.flip(rgb_image, 1)
                     qim = QtGui.QImage(flip_image.data, h, w, QtGui.QImage.Format.Format_RGB888)
-                    print("ToQImage RGB")
+                    #print("ToQImage RGB") #### OK
                     return qim.copy()
         print("ToQImage not uint8 ", im.dtype)
         return QtGui.QImage()
@@ -104,15 +104,9 @@ class CVCapture(QtCore.QObject):
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def setImage(self, image):
-        if image.isNull():
-            print("pyqtSlot::setImage isNull")
-        #print("pyqtSlot::setImage",image)
         if self._image == image:
-            #print("self._image == image",image)
-            pass
-            #return
+            return
         self._image = image
-        #print("self.imageReady.emit()")
         self.imageReady.emit()
 
     def index(self):
