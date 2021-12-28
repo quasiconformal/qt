@@ -1,0 +1,3 @@
+https://stackoverflow.com/questions/52944567/unable-to-stream-frames-from-camera-to-qml
+にある回答を使って作成してみる
+
