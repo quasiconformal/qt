@@ -37,8 +37,12 @@ class CVCapture(QtCore.QObject):
         self.m_videoCapture.release()
         self.m_videoCapture = cv2.VideoCapture(self._index)
         if self.m_videoCapture.isOpened():
+            print("self.m_videoCapture.isOpened()")
             self.m_timer.start(0, self)
             self.started.emit()
+        else:
+            print("self.m_videoCapture.isOpened() False")
+            
 
     @QtCore.pyqtSlot()
     def stop(self):
@@ -57,9 +61,14 @@ class CVCapture(QtCore.QObject):
     def process_image(self, frame):
         self.m_busy = True
         for f in self.m_filters:
-            frame = f.process_image(frame)
+            #frame = f.process_image(frame)
+            frame = frame ## TODO:
+        print("process_image frame:",frame.shape)
         image = CVCapture.ToQImage(frame)
         self.m_busy = False
+        if image.isNull():
+            print("process_image isNull")
+        #print("process_image", image)
         QtCore.QMetaObject.invokeMethod(self,
                                         "setImage",
                                         QtCore.Qt.ConnectionType.QueuedConnection,
@@ -68,6 +77,7 @@ class CVCapture(QtCore.QObject):
     @staticmethod
     def ToQImage(im):
         if im is None:
+            print("ToQImage im is None")
             return QtGui.QImage()
         if im.dtype == np.uint8:
             if len(im.shape) == 2:
@@ -75,6 +85,7 @@ class CVCapture(QtCore.QObject):
                     im.data, im.shape[1], im.shape[0], im.strides[0], 
                     QtGui.QImage.Format.Format_BGR888)
                 qim.setColorTable(gray_color_table)
+                print("ToQImage gray", qim.isNull())
                 return qim.copy()
 
             elif len(im.shape) == 3:
@@ -82,8 +93,10 @@ class CVCapture(QtCore.QObject):
                     w, h, _ = im.shape
                     rgb_image = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
                     flip_image = cv2.flip(rgb_image, 1)
-                    qim = QtGui.QImage(flip_image.data, h, w, QtGui.QImage.Format_RGB888)
+                    qim = QtGui.QImage(flip_image.data, h, w, QtGui.QImage.Format.Format_RGB888)
+                    print("ToQImage RGB")
                     return qim.copy()
+        print("ToQImage not uint8 ", im.dtype)
         return QtGui.QImage()
 
     def image(self):
@@ -91,8 +104,15 @@ class CVCapture(QtCore.QObject):
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def setImage(self, image):
-        if self._image == image: return
+        if image.isNull():
+            print("pyqtSlot::setImage isNull")
+        #print("pyqtSlot::setImage",image)
+        if self._image == image:
+            #print("self._image == image",image)
+            pass
+            #return
         self._image = image
+        #print("self.imageReady.emit()")
         self.imageReady.emit()
 
     def index(self):

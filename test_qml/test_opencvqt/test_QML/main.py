@@ -32,6 +32,7 @@ class MaxRGBFilter(PyCVQML.CVAbstractFilter):
 
 class GrayFilter(PyCVQML.CVAbstractFilter):
     def process_image(self, src):
+        #print("GrayFilter::process_image")
         return rgb_to_gray(src)
 
 
